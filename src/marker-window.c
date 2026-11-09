@@ -950,6 +950,7 @@ marker_window_add_editor(MarkerWindow *window,
 
   gtk_stack_add_named(window->editors_stack, GTK_WIDGET(editor), name);
   gtk_stack_add_named(window->toc_stack, GTK_WIDGET(marker_editor_get_toc(editor)), name);
+  gtk_stack_set_visible_child_full(window->toc_stack, name, GTK_STACK_TRANSITION_TYPE_NONE);
   gtk_widget_show(GTK_WIDGET(marker_editor_get_toc(editor)));
   marker_editor_refresh_preview(editor);
   gtk_widget_show(GTK_WIDGET(editor));

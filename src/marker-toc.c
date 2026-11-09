@@ -174,7 +174,8 @@ marker_toc_set_content (MarkerToc   *toc,
 }
 
 static void
-row_activated_cb (GtkListBoxRow *row,
+row_activated_cb (GtkListBox    *box,
+                  GtkListBoxRow *row,
                   gpointer       user_data)
 {
   MarkerToc *toc = MARKER_TOC (user_data);
