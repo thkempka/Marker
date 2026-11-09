@@ -848,7 +848,9 @@ marker_window_init (MarkerWindow *window)
   window->toc_stack = GTK_STACK (gtk_stack_new ());
   gtk_box_pack_start (GTK_BOX (sidebar_box), GTK_WIDGET (window->toc_stack),
                       TRUE, TRUE, 0);
-  gtk_widget_show (sidebar_box);
+  /* show_all: the separator and the toc stack are new widgets and are
+   * not mapped by gtk_widget_show() on the box alone */
+  gtk_widget_show_all (sidebar_box);
   gtk_paned_add1 (GTK_PANED (window->main_paned), sidebar_box);
   window->paned1 = sidebar_box;
 
