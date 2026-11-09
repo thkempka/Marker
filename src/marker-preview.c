@@ -40,6 +40,7 @@
 #define SCROLL_STEP 25
 #define SCROLL_STEP_SCRIPT "window.scrollBy(%d,%d);"
 #define SCROLL_SCRIPT "window.scrollTo(%d,%d);"
+#define SCROLL_TO_HEADING_SCRIPT "var hs=document.querySelectorAll('h1,h2,h3,h4,h5,h6');if(hs[%d]){hs[%d].scrollIntoView({behavior:'smooth',block:'start'});}"
 
 #define min(a, b) ((a < b) ? a : b)
 #define max(a, b) ((a < b) ? b : a)
@@ -524,5 +525,12 @@ void
 marker_preview_scroll_to_bottom (MarkerPreview *preview)
 {
   const gchar *script = "window.scrollTo(0,document.body.scrollHeight);";
+  webkit_web_view_run_javascript (WEBKIT_WEB_VIEW (preview), script, NULL, scroll_js_finished_cb, NULL);
+}
+
+void
+marker_preview_scroll_to_heading (MarkerPreview *preview, gint index)
+{
+  g_autofree gchar *script = g_strdup_printf (SCROLL_TO_HEADING_SCRIPT, index, index);
   webkit_web_view_run_javascript (WEBKIT_WEB_VIEW (preview), script, NULL, scroll_js_finished_cb, NULL);
 }

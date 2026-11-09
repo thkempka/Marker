@@ -40,6 +40,7 @@ marker_sources = [
   'src/marker-source-view.c',
   'src/marker-preview.c',
   'src/marker-string.c',
+  'src/marker-toc.c',
   'src/marker-widget.c',
   'src/marker-sketcher-window.c',
   'src/marker-utils.c',

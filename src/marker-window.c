@@ -59,6 +59,7 @@ struct _MarkerWindow
   GtkStack             *editors_stack;
   GtkTreeView          *documents_tree_view;
   GtkTreeStore         *documents_tree_store;
+  GtkStack             *toc_stack;
   GtkPaned             *main_paned;
   GtkWidget            *paned1;
   GtkWidget            *paned2;
@@ -502,6 +503,7 @@ tree_selection_changed_cb(GtkTreeSelection *selection,
     gtk_tree_model_get (model, &iter, NAME_COLUMN, &name, -1);
     gtk_tree_model_get (model, &iter, EDITOR_COLUMN, &editor, -1);
     gtk_stack_set_visible_child_full(window->editors_stack, name, GTK_STACK_TRANSITION_TYPE_CROSSFADE);
+    gtk_stack_set_visible_child_full(window->toc_stack, name, GTK_STACK_TRANSITION_TYPE_NONE);
 
     window->active_editor = editor;
     g_autofree gchar *title = marker_editor_get_title (marker_window_get_active_editor (window));
@@ -831,6 +833,25 @@ marker_window_init (MarkerWindow *window)
 
   window->main_paned = GTK_PANED(main_paned);
 
+  /** TABLE OF CONTENTS SIDEBAR **/
+  /* stack a table of contents below the documents tree in the sidebar;
+   * one page per open editor, switched together with the editors stack */
+  GtkWidget *documents_scroll = window->paned1;
+  g_object_ref (documents_scroll);
+  gtk_container_remove (GTK_CONTAINER (window->main_paned), documents_scroll);
+  GtkWidget *sidebar_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start (GTK_BOX (sidebar_box), documents_scroll, TRUE, TRUE, 0);
+  g_object_unref (documents_scroll);
+  gtk_box_pack_start (GTK_BOX (sidebar_box),
+                      gtk_separator_new (GTK_ORIENTATION_HORIZONTAL),
+                      FALSE, FALSE, 0);
+  window->toc_stack = GTK_STACK (gtk_stack_new ());
+  gtk_box_pack_start (GTK_BOX (sidebar_box), GTK_WIDGET (window->toc_stack),
+                      TRUE, TRUE, 0);
+  gtk_widget_show (sidebar_box);
+  gtk_paned_add1 (GTK_PANED (window->main_paned), sidebar_box);
+  window->paned1 = sidebar_box;
+
   /** HeaderBar **/
   GtkBox *header_box = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
   window->header_box = header_box;
@@ -926,6 +947,8 @@ marker_window_add_editor(MarkerWindow *window,
   g_sprintf(name, "edit%u", window->editors_counter);
 
   gtk_stack_add_named(window->editors_stack, GTK_WIDGET(editor), name);
+  gtk_stack_add_named(window->toc_stack, GTK_WIDGET(marker_editor_get_toc(editor)), name);
+  gtk_widget_show(GTK_WIDGET(marker_editor_get_toc(editor)));
   marker_editor_refresh_preview(editor);
   gtk_widget_show(GTK_WIDGET(editor));
   gtk_stack_set_visible_child_full(window->editors_stack, name, GTK_STACK_TRANSITION_TYPE_CROSSFADE);
@@ -1281,6 +1304,11 @@ marker_window_close_current_document (MarkerWindow *window)
       marker_editor_closing (editor);
       gtk_tree_store_remove (window->documents_tree_store, &iter);
       gtk_widget_destroy (GTK_WIDGET (editor));
+      /* the table of contents lives in the sidebar, not inside the
+       * editor, so it must be destroyed explicitly */
+      GtkWidget *toc = GTK_WIDGET (marker_editor_get_toc (editor));
+      if (toc != NULL)
+        gtk_widget_destroy (toc);
       window->editors_counter--;
 
       if (window->editors_counter == 1)

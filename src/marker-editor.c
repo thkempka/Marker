@@ -28,6 +28,7 @@
 #include "marker-string.h"
 
 #include "marker-editor.h"
+#include "marker-toc.h"
 
 struct _MarkerEditor
 {
@@ -45,6 +46,8 @@ struct _MarkerEditor
   MarkerPreview        *preview;
   MarkerSourceView     *source_view;
   GtkScrolledWindow    *source_scroll;
+  MarkerToc            *toc;
+  guint                 toc_hash;
   MarkerViewMode        view_mode;
 
   gboolean              search_active;
@@ -242,6 +245,24 @@ search_previous     (GtkEntry         *entry,
 }
 
 static void
+toc_heading_activated_cb (MarkerToc *toc,
+                          gint       line,
+                          gint       index,
+                          gpointer   user_data)
+{
+  MarkerEditor *editor = MARKER_EDITOR (user_data);
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (editor->source_view));
+  GtkTextIter iter;
+
+  /* position the editor cursor at the heading, then scroll the preview,
+   * so both views stay in sync with the selected heading */
+  gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
+  gtk_text_buffer_place_cursor (buffer, &iter);
+
+  marker_preview_scroll_to_heading (editor->preview, index);
+}
+
+static void
 marker_editor_init (MarkerEditor *editor)
 {
   editor->file = NULL;
@@ -309,6 +330,11 @@ marker_editor_init (MarkerEditor *editor)
   gtk_widget_show(GTK_WIDGET (editor->vbox));
   gtk_widget_show(GTK_WIDGET (editor->search_entry));
 
+  editor->toc = marker_toc_new ();
+  editor->toc_hash = 0;
+  g_signal_connect (editor->toc, "heading-activated",
+                    G_CALLBACK (toc_heading_activated_cb), editor);
+
   editor->view_mode = marker_prefs_get_default_view_mode ();
   editor->needs_refresh = FALSE;
 
@@ -369,6 +395,14 @@ marker_editor_refresh_preview (MarkerEditor *editor)
   g_autofree gchar *uri = (G_IS_FILE(editor->file)) ? g_file_get_path(editor->file) : NULL;
 
   marker_preview_render_markdown(editor->preview, markdown, css_theme, uri, cursor);
+
+  /* keep the table of contents in sync with the document */
+  guint toc_hash = g_str_hash (markdown);
+  if (toc_hash != editor->toc_hash)
+    {
+      editor->toc_hash = toc_hash;
+      marker_toc_set_content (editor->toc, markdown);
+    }
 }
 
 MarkerViewMode
@@ -666,6 +700,13 @@ marker_editor_get_source_view (MarkerEditor *editor)
 {
   g_assert (MARKER_IS_EDITOR (editor));
   return editor->source_view;
+}
+
+MarkerToc *
+marker_editor_get_toc (MarkerEditor *editor)
+{
+  g_assert (MARKER_IS_EDITOR (editor));
+  return editor->toc;
 }
 
 void

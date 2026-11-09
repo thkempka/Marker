@@ -27,6 +27,7 @@
 
 #include "marker-preview.h"
 #include "marker-source-view.h"
+#include "marker-toc.h"
 
 G_BEGIN_DECLS
 
@@ -69,6 +70,7 @@ gchar               *marker_editor_get_raw_title                 (MarkerEditor  
 gchar               *marker_editor_get_subtitle                  (MarkerEditor       *editor);
 MarkerPreview       *marker_editor_get_preview                   (MarkerEditor       *editor);
 MarkerSourceView    *marker_editor_get_source_view               (MarkerEditor       *editor);
+MarkerToc           *marker_editor_get_toc                       (MarkerEditor       *editor);
 void                 marker_editor_apply_prefs                   (MarkerEditor       *editor);
 void                 marker_editor_closing                       (MarkerEditor       *editor);
 
