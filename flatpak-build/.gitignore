@@ -1,0 +1,4 @@
+build-dir/
+repo/
+build.log
+*.tar.xz
