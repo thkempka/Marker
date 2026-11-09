@@ -254,12 +254,16 @@ toc_heading_activated_cb (MarkerToc *toc,
   GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (editor->source_view));
   GtkTextIter iter;
 
-  /* position the editor cursor at the heading, then scroll the preview,
-   * so both views stay in sync with the selected heading */
+  /* position the editor cursor at the heading and re-render the
+   * preview: the renderer places the cursor_pos marker at that line and
+   * the scroll web extension scrolls it into view when the document
+   * loads - the same native sync path the editor cursor uses, so the
+   * landing point is exact */
+  (void)index;
   gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
   gtk_text_buffer_place_cursor (buffer, &iter);
 
-  marker_preview_scroll_to_heading (editor->preview, index);
+  marker_editor_refresh_preview (editor);
 }
 
 static void

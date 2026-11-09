@@ -57,8 +57,6 @@ void                 marker_preview_scroll_up                    (MarkerPreview 
 void                 marker_preview_scroll_down                  (MarkerPreview      *preview);
 void                 marker_preview_scroll_to_top                (MarkerPreview      *preview);
 void                 marker_preview_scroll_to_bottom             (MarkerPreview      *preview);
-void                 marker_preview_scroll_to_heading            (MarkerPreview      *preview,
-                                                                  gint                index);
 
 G_END_DECLS
 
