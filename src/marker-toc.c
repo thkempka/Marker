@@ -49,7 +49,7 @@ enum
 static guint toc_signals[N_SIGNALS] = { 0 };
 
 static void
-free_heading (gpointer data, gpointer user_data)
+free_heading (gpointer data)
 {
   TocHeading *h = data;
   g_clear_pointer (&h->title, g_free);
